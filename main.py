@@ -5,6 +5,7 @@ from typing import Optional
 app = FastAPI()
 
 API_KEY = os.getenv("API_KEY")
+print("Loaded API_KEY from environment:", repr(API_KEY))
 
 def verify_key(access_key: Optional[str]):
     if access_key != API_KEY:
