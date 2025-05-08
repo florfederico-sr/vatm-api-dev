@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI, Header, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException
+from pydantic import BaseModel
 from typing import Optional
 
 app = FastAPI()
@@ -10,39 +11,37 @@ def verify_key(access_key: str):
     if access_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
-@app.get("/api/royalty/advance-amount")
-def get_advance_amount(
-    trended_annual: float = Query(..., description="Estimated annual earnings (e.g. 2000)"),
-    cushion: float = Query(..., description="Cushion as decimal (e.g. 0.10 for 10%)"),
-    decline_rate: float = Query(..., description="Decline rate as decimal (e.g. 0.0 for 0%)"),
-    term_years: float = Query(..., description="Contract term in years (e.g. 1.5)"),
-    frequency: str = Query(..., description="Payment frequency (e.g. Monthly)"),
-    discount_rate: float = Query(..., description="Discount rate as decimal (e.g. 0.19 for 19%)"),
+class AdvanceInput(BaseModel):
+    trended_annual: float
+    cushion: float
+    decline_rate: float
+    term_years: float
+    frequency: str
+    discount_rate: float
+
+@app.post("/api/royalty/advance-amount")
+def calculate_advance_amount(
+    data: AdvanceInput,
     access_key: str = Header(...)
 ):
     verify_key(access_key)
 
-    # Simple forecast calculation
-    projected_value = trended_annual * (1 - cushion) * (1 - discount_rate) * term_years
+    projected_value = data.trended_annual * (1 - data.cushion) * (1 - data.discount_rate) * data.term_years
 
     return {
-        "inputs": {
-            "trended_annual": trended_annual,
-            "cushion": cushion,
-            "decline_rate": decline_rate,
-            "term_years": term_years,
-            "frequency": frequency,
-            "discount_rate": discount_rate
-        },
+        "inputs": data.dict(),
         "projected_advance": round(projected_value, 2),
         "currency": "USD"
     }
 
-@app.get("/api/royalty/deal-status")
+class DealStatusInput(BaseModel):
+    full_legal_name: Optional[str] = None
+    email: Optional[str] = None
+    cellphone: Optional[str] = None
+
+@app.post("/api/royalty/deal-status")
 def get_royalty_advance_status(
-    full_legal_name: Optional[str] = Query(None, description="Full legal name of the artist or contact"),
-    email: Optional[str] = Query(None, description="Email of the artist or contact"),
-    cellphone: Optional[str] = Query(None, description="Mobile phone of the artist or contact"),
+    data: DealStatusInput,
     access_key: str = Header(...)
 ):
     verify_key(access_key)
@@ -53,7 +52,7 @@ def get_royalty_advance_status(
         "status": "active",
         "source_system": "Salesforce",
         "effective_date": "2024-01-15",
-        "full_legal_name": full_legal_name,
-        "email": email,
-        "cellphone": cellphone
+        "full_legal_name": data.full_legal_name,
+        "email": data.email,
+        "cellphone": data.cellphone
     }
