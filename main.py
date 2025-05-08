@@ -40,8 +40,9 @@ def get_advance_amount(
 
 @app.get("/api/royalty/deal-status")
 def get_royalty_advance_status(
-    artist_external_key: Optional[str] = Query(None, description="External artist reference key"),
-    full_name: Optional[str] = Query(None, description="Full name of the artist or contact"),
+    full_legal_name: Optional[str] = Query(None, description="Full legal name of the artist or contact"),
+    email: Optional[str] = Query(None, description="Email of the artist or contact"),
+    cellphone: Optional[str] = Query(None, description="Mobile phone of the artist or contact"),
     access_key: str = Header(...)
 ):
     verify_key(access_key)
@@ -49,9 +50,10 @@ def get_royalty_advance_status(
     return {
         "has_deal": True,
         "deal_id": "RAG-98765",
-        "status": "completed",
+        "status": "active",
         "source_system": "Salesforce",
         "effective_date": "2024-01-15",
-        "artist_id": artist_external_key,
-        "full_name": full_name
+        "full_legal_name": full_legal_name,
+        "email": email,
+        "cellphone": cellphone
     }
