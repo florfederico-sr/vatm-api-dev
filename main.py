@@ -35,11 +35,12 @@ def calculate_advance_amount(
     }
 
 class DealStatusInput(BaseModel):
-    full_legal_name: Optional[str] = None
-    email: Optional[str] = None
-    cellphone: Optional[str] = None
+    user_id: str
+    full_name: str
+    email_address: Optional[str] = None
+    cell_number: Optional[str] = None
 
-@app.post("/api/royalty/deal-status")
+@app.post("/api/royalty/active_deal")
 def get_royalty_advance_status(
     data: DealStatusInput,
     access_key: str = Header(...)
@@ -47,12 +48,17 @@ def get_royalty_advance_status(
     verify_key(access_key)
 
     return {
-        "has_deal": True,
+        "status": "success",
+        "active": True,
+        "fullname_match": True,
+        "email_match": True, 
+        "cell_number_match": True,
+        "partner_match": True,
         "deal_id": "RAG-98765",
-        "status": "active",
         "source_system": "Salesforce",
         "effective_date": "2024-01-15",
-        "full_legal_name": data.full_legal_name,
-        "email": data.email,
-        "cellphone": data.cellphone
+        "user_id": data.user_id,
+        "full_name": data.full_name,
+        "email_address": data.email_address,
+        "cell_number": data.cell_number
     }
