@@ -39,6 +39,7 @@ class DealStatusInput(BaseModel):
     full_name: str
     email_address: Optional[str] = None
     cell_number: Optional[str] = None
+    partner_name: Optional[str] = None
 
 @app.post("/api/royalty/active_deal")
 def get_royalty_advance_status(
@@ -60,5 +61,6 @@ def get_royalty_advance_status(
         "user_id": data.user_id,
         "full_name": data.full_name,
         "email_address": data.email_address,
-        "cell_number": data.cell_number
+        "cell_number": data.cell_number,
+        "partner_name": data.partner_name
     }
