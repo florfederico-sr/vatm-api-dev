@@ -44,7 +44,7 @@ Upload a CSV file containing earnings data for a single artist.
 - `partner_name` (string)
 - `track_title` (string)
 - `earning_amount` (float)
-- `currency` (string, e.g. "USD")
+- `currency` (string: ISO 4217 Codes) (Default=USD_840)
 - `date` (YYYY-MM-DD)
 
 **Only one artist per file is expected.
