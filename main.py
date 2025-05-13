@@ -1,7 +1,8 @@
 import os
-from fastapi import FastAPI, Header, HTTPException, Body
+from fastapi import FastAPI, Header, HTTPException, Body, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional
+import pandas as pd
 
 app = FastAPI()
 
@@ -11,63 +12,74 @@ def verify_key(access_key: str):
     if access_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
-# Advance Amount Input & Output
-class AdvanceInput(BaseModel):
-    trended_annual: float
-    cushion: float
-    decline_rate: float
-    term_years: float
-    frequency: str
-    discount_rate: float
+# CSV-based Advance Amount calculation
+@app.post(
+    "/api/royalty/advance-amount",
+    summary="Calculate projected advance from earnings CSV",
+    description="""
+Upload a CSV file containing earnings data for a single artist.
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "trended_annual": 2000,
-                "cushion": 0.1,
-                "decline_rate": 0.0,
-                "term_years": 2,
-                "frequency": "monthly",
-                "discount_rate": 0.05
-            }
-        }
+**Expected columns**:
+- `artist_id` (string or integer)
+- `partner_name` (string)
+- `track_title` (string)
+- `earning_amount` (float)
+- `currency` (string, e.g. "USD")
+- `date` (YYYY-MM-DD)
 
-class AdvanceAmountResponse(BaseModel):
-    inputs: AdvanceInput
-    projected_advance: float
-    currency: str
+**Only one artist per file is expected.
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "inputs": {
-                    "trended_annual": 2000,
-                    "cushion": 0.1,
-                    "decline_rate": 0.0,
-                    "term_years": 2,
-                    "frequency": "monthly",
-                    "discount_rate": 0.05
-                },
-                "projected_advance": 3420.0,
-                "currency": "USD"
-            }
-        }
-
-@app.post("/api/royalty/advance-amount", response_model=AdvanceAmountResponse)
-def calculate_advance_amount(
-    data: AdvanceInput = Body(...),
+The system will calculate the projected advance using the total earnings and fixed parameters:
+- cushion: 10%
+- discount rate: 5%
+- term: 2 years
+"""
+)
+async def calculate_advance_from_earnings_csv(
+    file: UploadFile = File(...),
     access_key: str = Header(...)
 ):
     verify_key(access_key)
 
-    projected_value = data.trended_annual * (1 - data.cushion) * (1 - data.discount_rate) * data.term_years
+    contents = await file.read()
+    try:
+        df = pd.read_csv(pd.compat.StringIO(contents.decode("utf-8")))
+    except Exception:
+        raise HTTPException(status_code=400, detail="File must be a valid CSV")
+
+    expected_cols = {"artist_id", "partner_name", "track_title", "earning_amount", "currency", "date"}
+    if not expected_cols.issubset(df.columns):
+        raise HTTPException(
+            status_code=400,
+            detail=f"CSV is missing required columns. Expected: {', '.join(expected_cols)}"
+        )
+
+    if df.empty:
+        raise HTTPException(status_code=400, detail="CSV is empty")
+
+    artist_id = str(df.iloc[0]["artist_id"])
+    partner_name = str(df.iloc[0]["partner_name"])
+    currency = str(df.iloc[0]["currency"])
+
+    try:
+        total_earnings = df["earning_amount"].astype(float).sum()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid or non-numeric values in earning_amount column")
+
+    cushion = 0.10
+    discount_rate = 0.05
+    term_years = 2
+
+    projected_advance = total_earnings * (1 - cushion) * (1 - discount_rate) * term_years
+    qualifies = projected_advance >= 1000
 
     return {
-        "inputs": data,
-        "projected_advance": round(projected_value, 2),
-        "currency": "USD"
+        "artist_id": artist_id,
+        "partner_name": partner_name,
+        "projected_advance": round(projected_advance, 2),
+        "currency": currency,
+        "qualifies": qualifies
     }
-
 
 # Deal Status Input & Output
 class DealStatusInput(BaseModel):
@@ -87,7 +99,7 @@ class DealStatusInput(BaseModel):
                 "partner_name": "cinq"
             }
         }
-        
+
 class DealStatusResponse(BaseModel):
     status: str
     active: bool
@@ -123,7 +135,7 @@ class DealStatusResponse(BaseModel):
                 "partner_name": "cinq"
             }
         }
-        
+
 @app.post("/api/royalty/active_deal", response_model=DealStatusResponse)
 def get_royalty_advance_status(
     data: DealStatusInput = Body(...),
