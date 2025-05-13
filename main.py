@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Body
 from pydantic import BaseModel
 from typing import Optional
 
@@ -11,7 +11,9 @@ def verify_key(access_key: str):
     if access_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
-# ----- Advance Amount Input -----
+# ------------------------------
+# Advance Amount Input & Output
+# ------------------------------
 class AdvanceInput(BaseModel):
     trended_annual: float
     cushion: float
@@ -32,7 +34,6 @@ class AdvanceInput(BaseModel):
             }
         }
 
-# ----- Advance Amount Response -----
 class AdvanceAmountResponse(BaseModel):
     inputs: AdvanceInput
     projected_advance: float
@@ -56,7 +57,7 @@ class AdvanceAmountResponse(BaseModel):
 
 @app.post("/api/royalty/advance-amount", response_model=AdvanceAmountResponse)
 def calculate_advance_amount(
-    data: AdvanceInput,
+    data: AdvanceInput = Body(...),
     access_key: str = Header(...)
 ):
     verify_key(access_key)
@@ -69,7 +70,9 @@ def calculate_advance_amount(
         "currency": "USD"
     }
 
-# ----- Deal Status Input -----
+# ------------------------------
+# Deal Status Input & Output
+# ------------------------------
 class DealStatusInput(BaseModel):
     user_id: str
     full_name: str
@@ -81,7 +84,7 @@ class DealStatusInput(BaseModel):
         schema_extra = {
             "example": {
                 "user_id": "123456",
-                "full_name": "joe smith",
+                "full_name": "Joe Smith",
                 "email_address": "user@example.com",
                 "cell_number": "+15555555555",
                 "partner_name": "cinq"
@@ -121,20 +124,19 @@ class DealStatusResponse(BaseModel):
                 "full_name": "joe smith",
                 "email_address": "user@example.com",
                 "cell_number": "+15555555555",
-                "partner_name": "cinq"
+                "partner_name": "Cinq"
             }
         }
 
-# ----- Deal Status Endpoint -----
 @app.post("/api/royalty/active_deal", response_model=DealStatusResponse)
 def get_royalty_advance_status(
-    data: DealStatusInput,
+    data: DealStatusInput = Body(...),
     access_key: str = Header(...)
 ):
     verify_key(access_key)
 
     return {
-        "status": "success",
+        "status": "allowed",
         "active": True,
         "fullname_match": True,
         "email_match": True,
