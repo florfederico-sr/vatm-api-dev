@@ -17,7 +17,7 @@ class AdvanceAmountCSVResponse(BaseModel):
     artist_id: str
     partner_name: str
     projected_advance: float
-    currency: str
+    currency: str = "USD_840"
     qualifies: bool
 
     class Config:
@@ -26,7 +26,7 @@ class AdvanceAmountCSVResponse(BaseModel):
                 "artist_id": "123",
                 "partner_name": "cinq",
                 "projected_advance": 3420.0,
-                "currency": "USD",
+                "currency": "USD_840",
                 "qualifies": True
             }
         }
@@ -156,7 +156,7 @@ class DealStatusResponse(BaseModel):
             }
         }
 
-@app.post("/api/royalty/active_deal", response_model=DealStatusResponse)
+@app.post("/api/royalty/active-deal", response_model=DealStatusResponse)
 def get_royalty_advance_status(
     data: DealStatusInput = Body(...),
     access_key: str = Header(...)
