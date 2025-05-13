@@ -1,4 +1,5 @@
 import os
+import io
 from fastapi import FastAPI, Header, HTTPException, Body, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional
@@ -62,7 +63,7 @@ async def calculate_advance_from_earnings_csv(
 
     contents = await file.read()
     try:
-        df = pd.read_csv(pd.compat.StringIO(contents.decode("utf-8")))
+        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
     except Exception:
         raise HTTPException(status_code=400, detail="File must be a valid CSV")
 
