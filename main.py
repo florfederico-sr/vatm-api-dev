@@ -12,9 +12,28 @@ def verify_key(access_key: str):
     if access_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
+class AdvanceAmountCSVResponse(BaseModel):
+    artist_id: str
+    partner_name: str
+    projected_advance: float
+    currency: str
+    qualifies: bool
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "artist_id": "123",
+                "partner_name": "cinq",
+                "projected_advance": 3420.0,
+                "currency": "USD",
+                "qualifies": True
+            }
+        }
+
 # CSV-based Advance Amount calculation
 @app.post(
     "/api/royalty/advance-amount",
+    response_model=AdvanceAmountCSVResponse,
     summary="Calculate projected advance from earnings CSV",
     description="""
 Upload a CSV file containing earnings data for a single artist.
