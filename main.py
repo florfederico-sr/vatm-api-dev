@@ -1,6 +1,7 @@
 import os
 import io
-from fastapi import FastAPI, Header, HTTPException, Body, UploadFile, File, Response
+from fastapi import FastAPI, Header, HTTPException, Body, UploadFile, File
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 import pandas as pd
@@ -215,13 +216,13 @@ Accepts user information and returns a downloadable CSV file with earnings data.
 **This is a simulated earnings dataset for development purposes.**
 """
 )
+
 def collect_earnings_data(
     data: CollectEarningsRequest = Body(...),
     access_key: str = Header(...)
 ):
     verify_key(access_key)
 
-    # Simulación de earnings por mes
     earnings_data = [
         {
             "artist_id": data.user_id,
@@ -236,13 +237,13 @@ def collect_earnings_data(
 
     df = pd.DataFrame(earnings_data)
 
-    buffer = io.StringIO()
-    df.to_csv(buffer, index=False)
-    csv_content = buffer.getvalue()
+    # Crear CSV en memoria
+    output = io.StringIO()
+    df.to_csv(output, index=False)
+    output.seek(0)
 
-    return Response(
-        content=csv_content,
+    return StreamingResponse(
+        iter([output.getvalue()]),
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename=earnings_{data.user_id}.csv"}
     )
-
