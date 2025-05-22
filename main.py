@@ -1,6 +1,6 @@
 import os
 import io
-from fastapi import FastAPI, Header, HTTPException, Body, UploadFile, File
+from fastapi import FastAPI, Header, HTTPException, Body, UploadFile, File, Response
 from pydantic import BaseModel
 from typing import Optional
 import pandas as pd
@@ -179,3 +179,60 @@ def get_royalty_advance_status(
         "cell_number": data.cell_number,
         "partner_name": data.partner_name
     }
+
+class CollectEarningsRequest(BaseModel):
+    user_id: str
+    full_name: str
+    email_address: Optional[str] = None
+    cell_number: Optional[str] = None
+    partner_name: Optional[str] = None
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "user_id": "123456",
+                "full_name": "joe smith",
+                "email_address": "user@example.com",
+                "cell_number": "+15555555555",
+                "partner_name": "cinq"
+            }
+        }
+
+@app.post(
+    "/api/royalty/collect-earningsdata",
+    summary="Generate CSV with earnings data for a user",
+    description="""
+Accepts user information and returns a downloadable CSV file with earnings data.
+
+**The returned CSV includes**:
+- `user_id`
+- `month`
+- `earnings`
+
+**This is a simulated earnings dataset for development purposes.**
+"""
+)
+def collect_earnings_data(
+    data: CollectEarningsRequest = Body(...),
+    access_key: str = Header(...)
+):
+    verify_key(access_key)
+
+    # Simulación de earnings por mes
+    earnings_data = [
+        {"user_id": data.user_id, "month": "2024-01", "earnings": 5000},
+        {"user_id": data.user_id, "month": "2024-02", "earnings": 5200},
+        {"user_id": data.user_id, "month": "2024-03", "earnings": 5100},
+    ]
+    df = pd.DataFrame(earnings_data)
+
+    buffer = io.StringIO()
+    df.to_csv(buffer, index=False)
+    csv_content = buffer.getvalue()
+
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=earnings_{data.user_id}.csv"}
+    )
+
