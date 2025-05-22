@@ -214,6 +214,8 @@ Accepts user information and returns a downloadable CSV file with earnings data.
 - 'date'
 
 **This is a simulated earnings dataset for development purposes.**
+**Note:** Swagger UI will only show the text.  
+To download the file, use a client like Postman, curl, or your browser.
 """
 )
 
