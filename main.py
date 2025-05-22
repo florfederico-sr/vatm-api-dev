@@ -40,12 +40,12 @@ class AdvanceAmountCSVResponse(BaseModel):
 Upload a CSV file containing earnings data for a single artist.
 
 **Expected columns**:
-- `artist_id` (string or integer)
-- `partner_name` (string)
-- `track_title` (string)
-- `earning_amount` (float)
-- `currency` (string: ISO 4217 Codes) (Default=USD_840)
-- `date` (YYYY-MM-DD)
+- 'artist_id' (string or integer)
+- 'partner_name' (string)
+- 'track_title' (string)
+- 'earning_amount' (float)
+- 'currency' (string: ISO 4217 Codes) (Default=USD_840)
+- 'date' (YYYY-MM-DD)
 
 **Only one artist per file is expected.
 
@@ -205,9 +205,12 @@ class CollectEarningsRequest(BaseModel):
 Accepts user information and returns a downloadable CSV file with earnings data.
 
 **The returned CSV includes**:
-- `user_id`
-- `month`
-- `earnings`
+- 'artist_id'
+- 'partner_name'
+- 'track_title'
+- 'earning_amount'
+- 'currency'
+- 'date'
 
 **This is a simulated earnings dataset for development purposes.**
 """
@@ -220,10 +223,17 @@ def collect_earnings_data(
 
     # Simulación de earnings por mes
     earnings_data = [
-        {"user_id": data.user_id, "month": "2024-01", "earnings": 5000},
-        {"user_id": data.user_id, "month": "2024-02", "earnings": 5200},
-        {"user_id": data.user_id, "month": "2024-03", "earnings": 5100},
+        {
+            "artist_id": data.user_id,
+            "partner_name": data.partner_name or "cinq",
+            "track_title": f"Track {i+1}",
+            "earning_amount": round(1000 + i * 250.75, 2),
+            "currency": "USD_840",
+            "date": f"2024-0{i+1}-15"
+        }
+        for i in range(3)
     ]
+
     df = pd.DataFrame(earnings_data)
 
     buffer = io.StringIO()
