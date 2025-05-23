@@ -241,7 +241,7 @@ def get_royalty_advance_status(
             "source_system": "Salesforce",
             "effective_date": "N/A",
             "user_id": data.user_id,
-            "full_name": None,
+            "full_name": str,
             "email_address": None,
             "cell_number": None,
             "partner_name": None
