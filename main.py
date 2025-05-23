@@ -226,9 +226,9 @@ def get_royalty_advance_status(
             "effective_date": "2023-10-01",
             "user_id": data.user_id,
             "full_name": "jamie scott",
-            "email_address": None,
+            "email_address": "jscott_77@gmail.com",
             "cell_number": data.cell_number,
-            "partner_name": None
+            "partner_name": "cinq"
         },
         {
             "status": "not-found",
