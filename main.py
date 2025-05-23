@@ -5,6 +5,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 import pandas as pd
+import random
 
 app = FastAPI()
 
@@ -164,22 +165,90 @@ def get_royalty_advance_status(
 ):
     verify_key(access_key)
 
-    return {
-        "status": "success",
-        "active": True,
-        "fullname_match": True,
-        "email_match": True,
-        "cell_number_match": True,
-        "partner_match": True,
-        "deal_id": "RAG-98765",
-        "source_system": "Salesforce",
-        "effective_date": "2024-01-15",
-        "user_id": data.user_id,
-        "full_name": data.full_name,
-        "email_address": data.email_address,
-        "cell_number": data.cell_number,
-        "partner_name": data.partner_name
-    }
+    examples = [
+        {
+            "status": "success",
+            "active": True,
+            "fullname_match": True,
+            "email_match": True,
+            "cell_number_match": True,
+            "partner_match": True,
+            "deal_id": "RAG-98765",
+            "source_system": "Salesforce",
+            "effective_date": "2024-01-15",
+            "user_id": data.user_id,
+            "full_name": data.full_name,
+            "email_address": data.email_address,
+            "cell_number": data.cell_number,
+            "partner_name": data.partner_name
+        },
+        {
+            "status": "success",
+            "active": True,
+            "fullname_match": True,
+            "email_match": False,
+            "cell_number_match": False,
+            "partner_match": False,
+            "deal_id": "RAG-12345",
+            "source_system": "Salesforce",
+            "effective_date": "2023-10-01",
+            "user_id": data.user_id,
+            "full_name": data.full_name,
+            "email_address": None,
+            "cell_number": None,
+            "partner_name": "ascap"
+        },
+        {
+            "status": "success",
+            "active": True,
+            "fullname_match": False,
+            "email_match": True,
+            "cell_number_match": False,
+            "partner_match": False,
+            "deal_id": "RAG-12345",
+            "source_system": "Salesforce",
+            "effective_date": "2023-10-01",
+            "user_id": data.user_id,
+            "full_name": "jamie scott",
+            "email_address": data.email_address,
+            "cell_number": None,
+            "partner_name": "bmi"
+        },
+        {
+            "status": "success",
+            "active": True,
+            "fullname_match": False,
+            "email_match": False,
+            "cell_number_match": True,
+            "partner_match": False,
+            "deal_id": "RAG-12345",
+            "source_system": "Salesforce",
+            "effective_date": "2023-10-01",
+            "user_id": data.user_id,
+            "full_name": "jamie scott",
+            "email_address": None,
+            "cell_number": data.cell_number,
+            "partner_name": None
+        },
+        {
+            "status": "not-found",
+            "active": False,
+            "fullname_match": False,
+            "email_match": False,
+            "cell_number_match": False,
+            "partner_match": False,
+            "deal_id": "N/A",
+            "source_system": "Salesforce",
+            "effective_date": "N/A",
+            "user_id": data.user_id,
+            "full_name": None,
+            "email_address": None,
+            "cell_number": None,
+            "partner_name": None
+        }
+    ]
+
+    return random.choice(examples)
 
 class CollectEarningsRequest(BaseModel):
     user_id: str
