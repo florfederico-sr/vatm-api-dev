@@ -66,4 +66,4 @@ jobs:
         with:
           app-name: 'api-sr-vatm-dev'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_ECAAD3A1C086462DAD01BACAC45C4F4C }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AF91220738D943D0A620A0D126700BDB }}
