@@ -8,4 +8,3 @@ simple-salesforce==1.12.5
 requests==2.31.0
 python-jose[cryptography]==3.3.0
 cryptography==41.0.3
-pyodbc
